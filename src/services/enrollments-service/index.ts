@@ -7,12 +7,13 @@ import { Address, Enrollment } from "@prisma/client";
 
 async function getAddressFromCEP(cep: string) {
   const result = await request.get(`https://viacep.com.br/ws/${cep}/json/`);
+  const usefulCepInfo = exclude(result.data, "ibge", "gia", "ddd", "siafi", "cep", "localidade");
   
   if (!result.data || result.data.erro) {
     throw notFoundError();
   }
 
-  return exclude(result.data, "ibge", "gia", "ddd", "siafi", "cep");
+  return { ...usefulCepInfo, cidade: result.data.localidade };
 }
 
 async function getOneWithAddressByUserId(userId: number): Promise<GetOneWithAddressByUserIdResult> {
