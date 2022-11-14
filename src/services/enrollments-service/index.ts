@@ -4,16 +4,19 @@ import addressRepository, { CreateAddressParams } from "@/repositories/address-r
 import enrollmentRepository, { CreateEnrollmentParams } from "@/repositories/enrollment-repository";
 import { exclude } from "@/utils/prisma-utils";
 import { Address, Enrollment } from "@prisma/client";
+import httpStatus from "http-status";
 
 async function getAddressFromCEP(cep: string) {
-  const result = await request.get(`https://viacep.com.br/ws/${cep}/json/`);
-  const usefulCepInfo = exclude(result.data, "ibge", "gia", "ddd", "siafi", "cep", "localidade");
-  
-  if (!result.data || result.data.erro) {
+  try {
+    const result = await request.get(`https://viacep.com.br/ws/${cep}/json/`);
+    const usefulCepInfo = exclude(result.data, "ibge", "gia", "ddd", "siafi", "cep", "localidade");
+    if (result.data.erro) {
+      throw notFoundError();
+    }
+    return { ...usefulCepInfo, cidade: result.data.localidade };
+  } catch (error) {
     throw notFoundError();
   }
-
-  return { ...usefulCepInfo, cidade: result.data.localidade };
 }
 
 async function getOneWithAddressByUserId(userId: number): Promise<GetOneWithAddressByUserIdResult> {
@@ -43,16 +46,19 @@ type GetAddressResult = Omit<Address, "createdAt" | "updatedAt" | "enrollmentId"
 async function createOrUpdateEnrollmentWithAddress(params: CreateOrUpdateEnrollmentWithAddress) {
   const enrollment = exclude(params, "address");
   const address = getAddressForUpsert(params.address);
-  const isCepValid = await request.get(`https://viacep.com.br/ws/${address.cep}/json/`);
 
-  if(!isCepValid.data || isCepValid.data.erro) {
-    throw notFoundError();
+  try {
+    const isCepValid = await request.get(`https://viacep.com.br/ws/${address.cep}/json/`);
+    // enrollment.birthday = new Date(enrollment.birthday);
+    if(isCepValid.data.erro) {
+      throw requestError(httpStatus.BAD_REQUEST, "The informed CEP number is invalid.");
+    }
+    const newEnrollment = await enrollmentRepository.upsert(params.userId, enrollment, exclude(enrollment, "userId"));
+    await addressRepository.upsert(newEnrollment.id, address, address);
+  } catch (error) {
+    const { status, statusText } = error.response;
+    throw requestError(status, statusText);
   }
-
-  // enrollment.birthday = new Date(enrollment.birthday);
-  const newEnrollment = await enrollmentRepository.upsert(params.userId, enrollment, exclude(enrollment, "userId"));
-
-  await addressRepository.upsert(newEnrollment.id, address, address);
 }
 
 function getAddressForUpsert(address: CreateAddressParams) {
