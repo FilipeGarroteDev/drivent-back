@@ -12,6 +12,16 @@ export type ViaCEPAddress = {
 
 };
 
+export type TicketsTypes = {
+  id: number,
+  name: string,
+  price: number,
+  isRemote: boolean,
+  includesHotel: boolean,
+  createdAt: Date,
+  updatedAt: Date,
+}
+
 export type AddressEnrollment = {
   logradouro: string,
   complemento: string,
