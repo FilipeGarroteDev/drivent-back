@@ -1,4 +1,4 @@
-import { listSearchedTicketsTypes } from "@/controllers";
+import { listSearchedTicketsTypes, searchUserTicket } from "@/controllers";
 import { authenticateToken } from "@/middlewares";
 import { Router } from "express";
 
@@ -7,7 +7,7 @@ const ticketsRouter = Router();
 ticketsRouter
   .all("/*", authenticateToken)
   .get("/types", listSearchedTicketsTypes)
-  .get("/", () => console.log("oi"))
+  .get("/", searchUserTicket)
   .post("/", () => console.log("oi"));
 
 export { ticketsRouter };

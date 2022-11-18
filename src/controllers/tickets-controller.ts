@@ -11,3 +11,14 @@ export async function listSearchedTicketsTypes(req: AuthenticatedRequest, res: R
     return res.sendStatus(httpStatus.BAD_REQUEST);
   }
 }
+
+export async function searchUserTicket(req: AuthenticatedRequest, res: Response) {
+  const { userId } = req;
+
+  try {
+    const userTicket = await ticketsService.searchUserTicketByUserId(userId);
+    return res.status(httpStatus.OK).send(userTicket);
+  } catch (error) {
+    return res.sendStatus(httpStatus.NOT_FOUND);
+  }
+}
