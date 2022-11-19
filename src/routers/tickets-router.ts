@@ -1,4 +1,4 @@
-import { listSearchedTicketsTypes, searchUserTicket } from "@/controllers";
+import { createNewTicketAndSendData, listSearchedTicketsTypes, searchUserTicket } from "@/controllers";
 import { authenticateToken } from "@/middlewares";
 import { Router } from "express";
 
@@ -8,6 +8,6 @@ ticketsRouter
   .all("/*", authenticateToken)
   .get("/types", listSearchedTicketsTypes)
   .get("/", searchUserTicket)
-  .post("/", () => console.log("oi"));
+  .post("/", createNewTicketAndSendData);
 
 export { ticketsRouter };
