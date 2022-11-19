@@ -25,17 +25,6 @@ export type TicketTypeId = {
   ticketTypeId: number;
 };
 
-export type TicketEntity = {
-  id: number;
-  ticketTypeId: number;
-  enrollmentId: number;
-  status: string;
-  updatedAt: Date;
-  createdAt: Date;
-};
-
-export type NewTicketEntity = Omit<TicketEntity, "id" | "createdAt">;
-
 export type AddressEnrollment = {
   logradouro: string;
   complemento: string;

@@ -29,7 +29,7 @@ export async function createNewTicketAndSendData(req: AuthenticatedRequest, res:
   const ticketTypeId: TicketTypeId = req.body;
 
   try {
-    const ticket = await ticketsService.searchTicketByTicketType(ticketTypeId, userId);
+    const ticket = await ticketsService.storeNewTicketAndPickUpContent(ticketTypeId, userId);
 
     return res.status(httpStatus.CREATED).send(ticket);
   } catch (error) {

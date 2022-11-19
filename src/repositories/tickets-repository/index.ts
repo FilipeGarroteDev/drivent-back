@@ -1,5 +1,5 @@
 import { prisma } from "@/config";
-import { NewTicketEntity } from "@/protocols";
+import { Ticket } from "@prisma/client";
 
 function getTicketsTypes() {
   return prisma.ticketType.findMany();
@@ -16,7 +16,7 @@ function getUserTicketByEnrollmentId(enrollmentId: number) {
   });
 }
 
-function getTicketByTicketType(ticketTypeId: number) {
+function getTicketByTicketTypeId(ticketTypeId: number) {
   return prisma.ticket.findFirst({
     where: {
       ticketTypeId: ticketTypeId,
@@ -27,7 +27,7 @@ function getTicketByTicketType(ticketTypeId: number) {
   });
 }
 
-function postNewTicket(newTicket: any) {
+async function postNewTicket(newTicket: Omit<Ticket, "id" | "createdAt">) {
   return prisma.ticket.create({
     data: newTicket,
   });
@@ -36,7 +36,7 @@ function postNewTicket(newTicket: any) {
 const ticketsRepository = {
   getTicketsTypes,
   getUserTicketByEnrollmentId,
-  getTicketByTicketType,
+  getTicketByTicketTypeId,
   postNewTicket,
 };
 

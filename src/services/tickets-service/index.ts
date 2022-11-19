@@ -1,8 +1,9 @@
 import { invalidDataError, notFoundError } from "@/errors";
-import { NewTicketEntity, TicketsTypes, TicketTypeId } from "@/protocols";
+import { TicketsTypes, TicketTypeId } from "@/protocols";
 import enrollmentRepository from "@/repositories/enrollment-repository";
 import ticketsRepository from "@/repositories/tickets-repository";
 import { ticketTypeSchema } from "@/schemas";
+import { Ticket } from "@prisma/client";
 
 async function listTicketsTypes(): Promise<TicketsTypes[]> {
   const tickets = await ticketsRepository.getTicketsTypes();
@@ -10,12 +11,9 @@ async function listTicketsTypes(): Promise<TicketsTypes[]> {
 }
 
 async function searchUserTicketByUserId(userId: number) {
-  const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
-  if (!enrollment) {
-    throw notFoundError();
-  }
+  const enrollmentId: number = await verifyUserEnrollment(userId);
 
-  const ticket = await ticketsRepository.getUserTicketByEnrollmentId(enrollment.id);
+  const ticket = await ticketsRepository.getUserTicketByEnrollmentId(enrollmentId);
   if (!ticket) {
     throw notFoundError();
   }
@@ -23,26 +21,31 @@ async function searchUserTicketByUserId(userId: number) {
   return ticket;
 }
 
-async function searchTicketByTicketType(ticketTypeId: TicketTypeId, userId: number) {
+async function storeNewTicketAndPickUpContent(ticketTypeId: TicketTypeId, userId: number) {
+  const enrollmentId: number = await verifyUserEnrollment(userId);
+
+  const { error } = ticketTypeSchema.validate(ticketTypeId);
+
+  if (error) {
+    const messages = error.details.map((err) => err.message);
+    throw invalidDataError(messages);
+  }
+
+  createAndSaveTicket(ticketTypeId.ticketTypeId, enrollmentId);
+
+  return await ticketsRepository.getTicketByTicketTypeId(ticketTypeId.ticketTypeId);
+}
+
+async function verifyUserEnrollment(userId: number): Promise<number> {
   const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
   if (!enrollment) {
     throw notFoundError();
   }
-
-  const validate = ticketTypeSchema.validate(ticketTypeId);
-
-  if (!validate || !ticketTypeId.ticketTypeId) {
-    const messages = validate.error.details.map((err) => err.message);
-    throw invalidDataError(messages);
-  }
-
-  saveCreatedTicket(ticketTypeId.ticketTypeId, enrollment.id);
-
-  return await ticketsRepository.getTicketByTicketType(Number(ticketTypeId.ticketTypeId));
+  return enrollment.id;
 }
 
-async function saveCreatedTicket(ticketTypeId: number, enrollmentId: number) {
-  const newTicket = {
+async function createAndSaveTicket(ticketTypeId: number, enrollmentId: number) {
+  const newTicket: Omit<Ticket, "id" | "createdAt"> = {
     ticketTypeId,
     enrollmentId,
     status: "RESERVED",
@@ -55,7 +58,7 @@ async function saveCreatedTicket(ticketTypeId: number, enrollmentId: number) {
 const ticketsService = {
   listTicketsTypes,
   searchUserTicketByUserId,
-  searchTicketByTicketType,
+  storeNewTicketAndPickUpContent,
 };
 
 export default ticketsService;
