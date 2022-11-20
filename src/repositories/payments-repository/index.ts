@@ -1,4 +1,5 @@
 import { prisma } from "@/config";
+import { Payment } from "@prisma/client";
 
 function getTicketById(ticketId: number) {
   return prisma.ticket.findFirst({
@@ -7,6 +8,7 @@ function getTicketById(ticketId: number) {
     },
     include: {
       Enrollment: true,
+      TicketType: true,
     },
   });
 }
@@ -19,9 +21,28 @@ function getPaymentData(ticketId: number) {
   });
 }
 
+function postTicketPayment(paymentData: Omit<Payment, "id" | "createdAt">) {
+  return prisma.payment.create({
+    data: paymentData,
+  });
+}
+
+function setPaidStatusOnTicket(ticketId: number) {
+  return prisma.ticket.update({
+    where: {
+      id: ticketId,
+    },
+    data: {
+      status: "PAID",
+    },
+  });
+}
+
 const paymentsRepository = {
   getTicketById,
   getPaymentData,
+  postTicketPayment,
+  setPaidStatusOnTicket,
 };
 
 export default paymentsRepository;

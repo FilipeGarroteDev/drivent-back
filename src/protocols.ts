@@ -25,6 +25,17 @@ export type TicketTypeId = {
   ticketTypeId: number;
 };
 
+export type FinishPayment = {
+  ticketId: number,
+	cardData: {
+		issuer: string,
+    number: number,
+    name: string,
+    expirationDate: Date,
+    cvv: number
+	}
+}
+
 export type AddressEnrollment = {
   logradouro: string;
   complemento: string;
