@@ -30,6 +30,9 @@ function getTicketByTicketTypeId(ticketTypeId: number) {
 async function postNewTicket(newTicket: Omit<Ticket, "id" | "createdAt">) {
   return prisma.ticket.create({
     data: newTicket,
+    include: {
+      TicketType: true,
+    }
   });
 }
 

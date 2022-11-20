@@ -29,12 +29,10 @@ export async function createNewTicketAndSendData(req: AuthenticatedRequest, res:
   const ticketTypeId: TicketTypeId = req.body;
 
   try {
-    const ticket = await ticketsService.storeNewTicketAndPickUpContent(ticketTypeId, userId);
+    const ticket = await ticketsService.createAndStoreNewTicket(ticketTypeId, userId);
 
     return res.status(httpStatus.CREATED).send(ticket);
   } catch (error) {
-    if (error.name === "InvalidDataError") {
-      return res.sendStatus(httpStatus.BAD_REQUEST);
-    } else if (error.name === "NotFoundError") return res.sendStatus(httpStatus.NOT_FOUND);
+    return res.sendStatus(httpStatus.NOT_FOUND);
   }
 }
