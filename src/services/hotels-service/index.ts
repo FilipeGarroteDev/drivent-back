@@ -17,6 +17,16 @@ async function searchAllAvailableHotels(userId: number): Promise<Hotel[]> {
   return await hotelsRepository.getAllHotels();
 }
 
+async function searchHotelRooms(hotelId: string) {
+  const allOfRooms = await hotelsRepository.getRoomsByHotelId(Number(hotelId));
+
+  if (allOfRooms.length === 0) {
+    throw notFoundError();
+  }
+
+  return allOfRooms;
+}
+
 async function verifyUserEnrollment(userId: number): Promise<number> {
   const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
   if (!enrollment) {
@@ -27,6 +37,7 @@ async function verifyUserEnrollment(userId: number): Promise<number> {
 
 const hotelsService = {
   searchAllAvailableHotels,
+  searchHotelRooms,
 };
 
 export default hotelsService;
