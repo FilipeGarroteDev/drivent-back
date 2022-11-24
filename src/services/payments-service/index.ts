@@ -1,6 +1,6 @@
 import { invalidDataError, notFoundError, unauthorizedError } from "@/errors";
 import { FinishPayment } from "@/protocols";
-import paymentsRepository from "@/repositories/payments-repository";
+import paymentsRepository from "@/repositories/payment-repository";
 import { Payment } from "@prisma/client";
 
 async function searchPaymentByTicketId(ticketId: string, userId: number) {

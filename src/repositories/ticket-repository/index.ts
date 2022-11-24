@@ -1,70 +1,46 @@
 import { prisma } from "@/config";
-import { Ticket, TicketStatus } from "@prisma/client";
+import { Ticket } from "@prisma/client";
 
-async function findTicketTypes() {
+function getTicketsTypes() {
   return prisma.ticketType.findMany();
 }
 
-async function findTickeyById(ticketId: number) {
+function getUserTicketByEnrollmentId(enrollmentId: number) {
   return prisma.ticket.findFirst({
     where: {
-      id: ticketId,
+      enrollmentId,
     },
     include: {
-      Enrollment: true,
-    }
+      TicketType: true,
+    },
   });
 }
-async function findTickeWithTypeById(ticketId: number) {
+
+function getTicketByTicketTypeId(ticketTypeId: number) {
   return prisma.ticket.findFirst({
     where: {
-      id: ticketId,
+      ticketTypeId: ticketTypeId,
     },
+    include: {
+      TicketType: true,
+    },
+  });
+}
+
+async function postNewTicket(newTicket: Omit<Ticket, "id" | "createdAt">) {
+  return prisma.ticket.create({
+    data: newTicket,
     include: {
       TicketType: true,
     }
   });
 }
 
-async function findTicketByEnrollmentId(enrollmentId: number) {
-  return prisma.ticket.findFirst({
-    where: {
-      enrollmentId,
-    },
-    include: {
-      TicketType: true, //inner join
-    }
-  });
-}
-
-async function createTicket(ticket: CreateTicketParams) {
-  return prisma.ticket.create({
-    data: {
-      ...ticket,
-    }
-  });
-}
-
-async function ticketProcessPayment(ticketId: number) {
-  return prisma.ticket.update({
-    where: {
-      id: ticketId,
-    },
-    data: {
-      status: TicketStatus.PAID,
-    }
-  });
-}
-
-export type CreateTicketParams = Omit<Ticket, "id" | "createdAt" | "updatedAt">
-
-const ticketRepository = {
-  findTicketTypes,
-  findTicketByEnrollmentId,
-  createTicket,
-  findTickeyById,
-  findTickeWithTypeById,
-  ticketProcessPayment,
+const ticketsRepository = {
+  getTicketsTypes,
+  getUserTicketByEnrollmentId,
+  getTicketByTicketTypeId,
+  postNewTicket,
 };
 
-export default ticketRepository;
+export default ticketsRepository;
