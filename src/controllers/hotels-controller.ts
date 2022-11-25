@@ -22,11 +22,13 @@ export async function listAllHotels(req: AuthenticatedRequest, res: Response) {
 }
 
 export async function listAllRoomsFromHotel(req: AuthenticatedRequest, res: Response) {
-  const { hotelId } = req.query as Record<string, string>;
+  const { hotelId } = req.params as Record<string, string>;
   try {
     const hotelRooms = await hotelsService.searchHotelRooms(hotelId);
     return res.status(httpStatus.OK).send(hotelRooms);
   } catch (error) {
-    return res.sendStatus(httpStatus.NOT_FOUND);
+    if (error.name === "NotFoundError") {
+      return res.sendStatus(httpStatus.NOT_FOUND);
+    }
   }
 }

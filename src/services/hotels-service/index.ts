@@ -18,7 +18,13 @@ async function searchAllAvailableHotels(userId: number): Promise<Hotel[]> {
 }
 
 async function searchHotelRooms(hotelId: string) {
-  const allOfRooms = await hotelsRepository.getRoomsByHotelId(Number(hotelId));
+  const numberHotelId = Number(hotelId);
+
+  if (!numberHotelId) {
+    throw notFoundError();
+  }
+  
+  const allOfRooms = await hotelsRepository.getRoomsByHotelId(numberHotelId);
 
   if (allOfRooms.length === 0) {
     throw notFoundError();
