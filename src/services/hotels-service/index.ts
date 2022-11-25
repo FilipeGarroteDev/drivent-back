@@ -1,4 +1,4 @@
-import { invalidDataError, notFoundError, unauthorizedError } from "@/errors";
+import { forbiddenError, invalidDataError, notFoundError, unauthorizedError } from "@/errors";
 import enrollmentRepository from "@/repositories/enrollment-repository";
 import hotelsRepository from "@/repositories/hotel-repository";
 import ticketsRepository from "@/repositories/ticket-repository";
@@ -17,13 +17,19 @@ async function searchAllAvailableHotels(userId: number): Promise<Hotel[]> {
   return await hotelsRepository.getAllHotels();
 }
 
-async function searchHotelRooms(hotelId: string) {
+async function searchHotelRooms(hotelId: string, userId: number) {
+  const enrollmentId = await verifyUserEnrollment(userId);
+  const ticket = await ticketsRepository.getUserTicketByEnrollmentId(enrollmentId);
   const numberHotelId = Number(hotelId);
 
-  if (!numberHotelId) {
+  if (!ticket || !ticket.TicketType.includesHotel || ticket.TicketType.isRemote) {
+    throw forbiddenError();
+  } else if (ticket.status === "RESERVED") {
+    throw invalidDataError(["Ticket payment not found"]);
+  } else if (!numberHotelId) {
     throw notFoundError();
   }
-  
+
   const allOfRooms = await hotelsRepository.getRoomsByHotelId(numberHotelId);
 
   if (allOfRooms.length === 0) {

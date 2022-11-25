@@ -23,12 +23,18 @@ export async function listAllHotels(req: AuthenticatedRequest, res: Response) {
 
 export async function listAllRoomsFromHotel(req: AuthenticatedRequest, res: Response) {
   const { hotelId } = req.params as Record<string, string>;
+  const { userId } = req as AuthenticatedRequest;
+
   try {
-    const hotelRooms = await hotelsService.searchHotelRooms(hotelId);
+    const hotelRooms = await hotelsService.searchHotelRooms(hotelId, userId);
     return res.status(httpStatus.OK).send(hotelRooms);
   } catch (error) {
     if (error.name === "NotFoundError") {
       return res.sendStatus(httpStatus.NOT_FOUND);
+    } else if (error.name === "ForbiddenError") {
+      return res.sendStatus(httpStatus.FORBIDDEN);
+    } else if (error.name === "InvalidDataError") {
+      return res.sendStatus(httpStatus.PAYMENT_REQUIRED);
     }
   }
 }
