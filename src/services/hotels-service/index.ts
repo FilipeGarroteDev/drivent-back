@@ -9,7 +9,7 @@ async function searchAllAvailableHotels(userId: number): Promise<Hotel[]> {
   const ticket = await ticketsRepository.getUserTicketByEnrollmentId(enrollmentId);
 
   if (!ticket || !ticket.TicketType.includesHotel || ticket.TicketType.isRemote) {
-    throw notFoundError();
+    throw forbiddenError();
   } else if (ticket.status === "RESERVED") {
     throw invalidDataError(["Ticket payment not found"]);
   }
@@ -31,11 +31,6 @@ async function searchHotelRooms(hotelId: string, userId: number) {
   }
 
   const allOfRooms = await hotelsRepository.getRoomsByHotelId(numberHotelId);
-
-  if (allOfRooms.length === 0) {
-    throw notFoundError();
-  }
-
   return allOfRooms;
 }
 

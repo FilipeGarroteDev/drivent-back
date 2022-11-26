@@ -11,8 +11,8 @@ export async function listAllHotels(req: AuthenticatedRequest, res: Response) {
     const hotelsList: Hotel[] = await hotelsService.searchAllAvailableHotels(userId);
     return res.status(httpStatus.OK).send(hotelsList);
   } catch (error) {
-    if (error.name === "NotFoundError") {
-      return res.sendStatus(httpStatus.NOT_FOUND);
+    if (error.name === "ForbiddenError") {
+      return res.sendStatus(httpStatus.FORBIDDEN);
     } else if (error.name === "UnauthorizedError") {
       return res.sendStatus(httpStatus.UNAUTHORIZED);
     } else if (error.name === "InvalidDataError") {
