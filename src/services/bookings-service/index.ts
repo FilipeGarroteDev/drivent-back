@@ -16,18 +16,22 @@ async function searchBookingByUserId(userId: number) {
 async function createAndSaveNewBooking(userId: number, roomId: number) {
   const enrollmentId = await verifyUserEnrollment(userId);
   const ticket = await ticketsRepository.getUserTicketByEnrollmentId(enrollmentId);
+  const totalRoomBookings = await bookingsRepository.getAllRoomBookings(roomId);
 
-  if (!ticket || ticket.status === "RESERVED" || ticket.TicketType.isRemote || !ticket.TicketType.includesHotel) {
+  if (!roomId) {
+    throw notFoundError();
+  } else if (
+    !ticket ||
+    ticket.status === "RESERVED" ||
+    ticket.TicketType.isRemote ||
+    !ticket.TicketType.includesHotel ||
+    !totalRoomBookings ||
+    totalRoomBookings._count.Booking === totalRoomBookings.capacity
+  ) {
     throw forbiddenError();
   }
 
   const booking = await bookingsRepository.postNewBooking(userId, roomId);
-
-  if (!roomId) {
-    throw notFoundError();
-  } else if (booking.Room.capacity < 1) {
-    throw forbiddenError();
-  }
 
   return booking.id;
 }
