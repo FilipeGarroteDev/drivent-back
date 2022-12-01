@@ -1,9 +1,20 @@
 import { prisma } from "@/config";
 
-function getUserBooking(userId: number) {
+function getBookingByUserId(userId: number) {
   return prisma.booking.findFirst({
     where: {
       userId,
+    },
+    include: {
+      Room: true,
+    },
+  });
+}
+
+function getBookingById(id: number) {
+  return prisma.booking.findFirst({
+    where: {
+      id,
     },
     include: {
       Room: true,
@@ -22,11 +33,27 @@ function getRoomsByHotelId(hotelId: number) {
   });
 }
 
+function getAllRoomBookings(id: number) {
+  return prisma.room.findFirst({
+    where: {
+      id,
+    },
+    include: {
+      Booking: true,
+      _count: {
+        select: {
+          Booking: true
+        }
+      }
+    },
+  });
+}
+
 function postNewBooking(userId: number, roomId: number) {
   return prisma.booking.create({
     data: {
       userId,
-      roomId
+      roomId,
     },
     include: {
       Room: true,
@@ -34,10 +61,24 @@ function postNewBooking(userId: number, roomId: number) {
   });
 }
 
+function updateBookingData(id: number, roomId: number) {
+  return prisma.booking.update({
+    where: {
+      id,
+    },
+    data: {
+      roomId,
+    },
+  });
+}
+
 const bookingsRepository = {
-  getUserBooking,
+  getBookingByUserId,
+  getBookingById,
   getRoomsByHotelId,
+  getAllRoomBookings,
   postNewBooking,
+  updateBookingData,
 };
 
 export default bookingsRepository;

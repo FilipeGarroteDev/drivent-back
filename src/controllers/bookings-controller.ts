@@ -20,7 +20,7 @@ export async function listUserBooking(req: AuthenticatedRequest, res: Response) 
 
 export async function bookAnAvailableHotelRoom(req: AuthenticatedRequest, res: Response) {
   const { userId } = req as AuthenticatedRequest;
-  const { roomId } = req.body as Record<string, string>;
+  const roomId: number = req.body.roomId;
 
   try {
     const bookingId = await bookingsService.createAndSaveNewBooking(userId, roomId);
