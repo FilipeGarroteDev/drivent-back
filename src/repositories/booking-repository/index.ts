@@ -5,7 +5,8 @@ function getBookingByUserId(userId: number) {
     where: {
       userId,
     },
-    include: {
+    select: {
+      id: true,
       Room: true,
     },
   });
@@ -42,9 +43,9 @@ function getAllRoomBookings(id: number) {
       Booking: true,
       _count: {
         select: {
-          Booking: true
-        }
-      }
+          Booking: true,
+        },
+      },
     },
   });
 }
