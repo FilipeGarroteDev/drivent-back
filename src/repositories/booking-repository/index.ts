@@ -22,9 +22,22 @@ function getRoomsByHotelId(hotelId: number) {
   });
 }
 
+function postNewBooking(userId: number, roomId: number) {
+  return prisma.booking.create({
+    data: {
+      userId,
+      roomId
+    },
+    include: {
+      Room: true,
+    },
+  });
+}
+
 const bookingsRepository = {
   getUserBooking,
   getRoomsByHotelId,
+  postNewBooking,
 };
 
 export default bookingsRepository;

@@ -12,12 +12,26 @@ export async function listUserBooking(req: AuthenticatedRequest, res: Response) 
   } catch (error) {
     if (error.message === "NotFoundError") {
       return res.sendStatus(httpStatus.NOT_FOUND);
-    } else if (error.message === "UnauthorizedError") {
-      return res.sendStatus(httpStatus.UNAUTHORIZED);
+    } else if (error.message === "ForbiddenError") {
+      return res.sendStatus(httpStatus.FORBIDDEN);
     }
   }
 }
 
-// export async function bookAnAvailableHotelRoom(req: AuthenticatedRequest, res: Response) {}
+export async function bookAnAvailableHotelRoom(req: AuthenticatedRequest, res: Response) {
+  const { userId } = req as AuthenticatedRequest;
+  const { roomId } = req.body as Record<string, string>;
+
+  try {
+    const bookingId = await bookingsService.createAndSaveNewBooking(userId, roomId);
+    res.sendStatus(httpStatus.OK).send(bookingId);
+  } catch (error) {
+    if (error.message === "NotFoundError") {
+      return res.sendStatus(httpStatus.NOT_FOUND);
+    } else if (error.message === "ForbiddenError") {
+      return res.sendStatus(httpStatus.FORBIDDEN);
+    }
+  }
+}
 
 // export async function changeActiveBooking(req: AuthenticatedRequest, res: Response) {}

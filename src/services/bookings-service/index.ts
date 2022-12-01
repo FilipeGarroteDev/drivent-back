@@ -1,17 +1,9 @@
-import { forbiddenError, invalidDataError, notFoundError, unauthorizedError } from "@/errors";
+import { forbiddenError, notFoundError } from "@/errors";
 import bookingsRepository from "@/repositories/booking-repository";
 import enrollmentRepository from "@/repositories/enrollment-repository";
-import hotelsRepository from "@/repositories/hotel-repository";
 import ticketsRepository from "@/repositories/ticket-repository";
 
 async function searchBookingByUserId(userId: number) {
-  const enrollmentId = await verifyUserEnrollment(userId);
-  const ticket = await ticketsRepository.getUserTicketByEnrollmentId(enrollmentId);
-
-  if (!ticket || ticket.status === "RESERVED" || ticket.TicketType.isRemote || !ticket.TicketType.includesHotel) {
-    throw unauthorizedError();
-  }
-
   const booking = await bookingsRepository.getUserBooking(userId);
 
   if (!booking) {
@@ -21,34 +13,43 @@ async function searchBookingByUserId(userId: number) {
   return booking;
 }
 
-async function searchHotelRooms(hotelId: string, userId: number) {
+async function createAndSaveNewBooking(userId: number, roomId: string) {
   const enrollmentId = await verifyUserEnrollment(userId);
   const ticket = await ticketsRepository.getUserTicketByEnrollmentId(enrollmentId);
-  const numberHotelId = Number(hotelId);
+  const numberRoomId = Number(roomId);
 
-  if (!ticket || !ticket.TicketType.includesHotel || ticket.TicketType.isRemote) {
+  if (
+    !ticket ||
+    ticket.status === "RESERVED" ||
+    ticket.TicketType.isRemote ||
+    !ticket.TicketType.includesHotel ||
+    !numberRoomId
+  ) {
     throw forbiddenError();
-  } else if (ticket.status === "RESERVED") {
-    throw invalidDataError(["Ticket payment not found"]);
-  } else if (!numberHotelId) {
-    throw notFoundError();
   }
 
-  const allOfRooms = await hotelsRepository.getRoomsByHotelId(numberHotelId);
-  return allOfRooms;
+  const booking = await bookingsRepository.postNewBooking(userId, numberRoomId);
+
+  if (!roomId) {
+    throw notFoundError();
+  } else if (booking.Room.capacity < 1) {
+    throw forbiddenError();
+  }
+
+  return booking.id;
 }
 
 async function verifyUserEnrollment(userId: number): Promise<number> {
   const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
   if (!enrollment) {
-    throw unauthorizedError();
+    throw forbiddenError();
   }
   return enrollment.id;
 }
 
 const bookingsService = {
   searchBookingByUserId,
-  searchHotelRooms,
+  createAndSaveNewBooking,
 };
 
 export default bookingsService;
