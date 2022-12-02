@@ -18,16 +18,15 @@ async function createAndSaveNewBooking(userId: number, roomId: number) {
   const ticket = await ticketsRepository.getUserTicketByEnrollmentId(enrollmentId);
   const totalRoomBookings = await bookingsRepository.getAllRoomBookings(roomId);
 
-  if (!roomId) {
+  if (!ticket || ticket.status === "RESERVED" || ticket.TicketType.isRemote || !ticket.TicketType.includesHotel) {
+    throw forbiddenError();
+  }
+
+  if (!roomId || !totalRoomBookings) {
     throw notFoundError();
-  } else if (
-    !ticket ||
-    ticket.status === "RESERVED" ||
-    ticket.TicketType.isRemote ||
-    !ticket.TicketType.includesHotel ||
-    !totalRoomBookings ||
-    totalRoomBookings._count.Booking === totalRoomBookings.capacity
-  ) {
+  }
+
+  if (totalRoomBookings.Booking.length >= totalRoomBookings.capacity) {
     throw forbiddenError();
   }
 
@@ -37,22 +36,12 @@ async function createAndSaveNewBooking(userId: number, roomId: number) {
 }
 
 async function changeExistentBookingData(userId: number, roomId: number, bookingId: string) {
-  const enrollmentId = await verifyUserEnrollment(userId);
-  const ticket = await ticketsRepository.getUserTicketByEnrollmentId(enrollmentId);
   const totalRoomBookings = await bookingsRepository.getAllRoomBookings(roomId);
   const numberBookingId = Number(bookingId);
 
   if (!roomId) {
     throw notFoundError();
-  } else if (
-    !ticket ||
-    ticket.status === "RESERVED" ||
-    ticket.TicketType.isRemote ||
-    !ticket.TicketType.includesHotel ||
-    !numberBookingId ||
-    !totalRoomBookings ||
-    totalRoomBookings._count.Booking === totalRoomBookings.capacity
-  ) {
+  } else if (!numberBookingId || !totalRoomBookings || totalRoomBookings.Booking.length >= totalRoomBookings.capacity) {
     throw forbiddenError();
   }
 

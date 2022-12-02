@@ -41,11 +41,6 @@ function getAllRoomBookings(id: number) {
     },
     include: {
       Booking: true,
-      _count: {
-        select: {
-          Booking: true,
-        },
-      },
     },
   });
 }
