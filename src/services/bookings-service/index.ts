@@ -1,10 +1,11 @@
 import { forbiddenError, notFoundError } from "@/errors";
+import { BookingEntity, CompletedTicket } from "@/protocols";
 import bookingsRepository from "@/repositories/booking-repository";
 import enrollmentRepository from "@/repositories/enrollment-repository";
 import ticketsRepository from "@/repositories/ticket-repository";
 
-async function searchBookingByUserId(userId: number) {
-  const booking = await bookingsRepository.getBookingByUserId(userId);
+async function searchBookingByUserId(userId: number): Promise<BookingEntity> {
+  const booking: BookingEntity = await bookingsRepository.getBookingByUserId(userId);
 
   if (!booking) {
     throw notFoundError();
@@ -13,14 +14,12 @@ async function searchBookingByUserId(userId: number) {
   return booking;
 }
 
-async function createAndSaveNewBooking(userId: number, roomId: number) {
-  const enrollmentId = await verifyUserEnrollment(userId);
-  const ticket = await ticketsRepository.getUserTicketByEnrollmentId(enrollmentId);
+async function createAndSaveNewBooking(userId: number, roomId: number): Promise<number> {
+  const enrollmentId: number = await verifyUserEnrollment(userId);
+  const ticket: CompletedTicket = await ticketsRepository.getUserTicketByEnrollmentId(enrollmentId);
   const totalRoomBookings = await bookingsRepository.getAllRoomBookings(roomId);
 
-  if (!ticket || ticket.status === "RESERVED" || ticket.TicketType.isRemote || !ticket.TicketType.includesHotel) {
-    throw forbiddenError();
-  }
+  verifyValidTicket(ticket);
 
   if (!roomId || !totalRoomBookings) {
     throw notFoundError();
@@ -35,7 +34,7 @@ async function createAndSaveNewBooking(userId: number, roomId: number) {
   return booking.id;
 }
 
-async function changeExistentBookingData(userId: number, roomId: number, bookingId: string) {
+async function changeExistentBookingData(userId: number, roomId: number, bookingId: string): Promise<number> {
   const totalRoomBookings = await bookingsRepository.getAllRoomBookings(roomId);
   const numberBookingId = Number(bookingId);
 
@@ -63,6 +62,16 @@ async function verifyUserEnrollment(userId: number): Promise<number> {
     throw forbiddenError();
   }
   return enrollment.id;
+}
+
+function verifyValidTicket(ticket: CompletedTicket): void {
+  if (!ticket) {
+    throw forbiddenError();
+  } else if (ticket.status === "RESERVED") {
+    throw forbiddenError();
+  } else if (ticket.TicketType.isRemote || !ticket.TicketType.includesHotel) {
+    throw forbiddenError();
+  }
 }
 
 const bookingsService = {

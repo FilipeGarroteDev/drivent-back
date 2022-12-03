@@ -1,3 +1,5 @@
+import { Room } from "@prisma/client";
+
 export type ApplicationError = {
   name: string;
   message: string;
@@ -23,6 +25,16 @@ export type TicketsTypes = {
 
 export type TicketTypeId = {
   ticketTypeId: number;
+};
+
+export type CompletedTicket = {
+  id: number
+  ticketTypeId: number
+  enrollmentId: number
+  status: string
+  createdAt: Date
+  updatedAt: Date
+  TicketType: TicketsTypes
 };
 
 export type FinishPayment = {
@@ -51,4 +63,9 @@ export type RequestError = {
   statusText: string;
   name: string;
   message: string;
+};
+
+export type BookingEntity = {
+  id: number
+  Room: Room
 };
