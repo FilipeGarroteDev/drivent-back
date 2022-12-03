@@ -39,15 +39,17 @@ async function changeExistentBookingData(userId: number, roomId: number, booking
   const totalRoomBookings = await bookingsRepository.getAllRoomBookings(roomId);
   const numberBookingId = Number(bookingId);
 
-  if (!roomId) {
+  if (!roomId || !totalRoomBookings) {
     throw notFoundError();
-  } else if (!numberBookingId || !totalRoomBookings || totalRoomBookings.Booking.length >= totalRoomBookings.capacity) {
+  }
+
+  if (totalRoomBookings.Booking.length >= totalRoomBookings.capacity) {
     throw forbiddenError();
   }
 
   const booking = await bookingsRepository.getBookingByUserId(userId);
 
-  if (!booking || booking.id !== numberBookingId) {
+  if (!numberBookingId || !booking || booking.id !== numberBookingId) {
     throw forbiddenError();
   }
 

@@ -12,8 +12,6 @@ export async function listUserBooking(req: AuthenticatedRequest, res: Response) 
   } catch (error) {
     if (error.name === "NotFoundError") {
       return res.sendStatus(httpStatus.NOT_FOUND);
-    } else if (error.name === "ForbiddenError") {
-      return res.sendStatus(httpStatus.FORBIDDEN);
     }
   }
 }
@@ -41,7 +39,7 @@ export async function changeActiveBooking(req: AuthenticatedRequest, res: Respon
 
   try {
     const changedBookingId = await bookingsService.changeExistentBookingData(userId, roomId, bookingId);
-    res.status(httpStatus.OK).send(changedBookingId);
+    res.status(httpStatus.OK).send({ changedBookingId });
   } catch (error) {
     if (error.name === "NotFoundError") {
       return res.sendStatus(httpStatus.NOT_FOUND);

@@ -16,17 +16,6 @@ function getUserTicketByEnrollmentId(enrollmentId: number) {
   });
 }
 
-function getTicketByTicketTypeId(ticketTypeId: number) {
-  return prisma.ticket.findFirst({
-    where: {
-      ticketTypeId: ticketTypeId,
-    },
-    include: {
-      TicketType: true,
-    },
-  });
-}
-
 async function postNewTicket(newTicket: Omit<Ticket, "id" | "createdAt">) {
   return prisma.ticket.create({
     data: newTicket,
@@ -39,7 +28,6 @@ async function postNewTicket(newTicket: Omit<Ticket, "id" | "createdAt">) {
 const ticketsRepository = {
   getTicketsTypes,
   getUserTicketByEnrollmentId,
-  getTicketByTicketTypeId,
   postNewTicket,
 };
 

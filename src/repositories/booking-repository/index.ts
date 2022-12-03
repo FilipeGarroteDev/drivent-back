@@ -12,28 +12,6 @@ function getBookingByUserId(userId: number) {
   });
 }
 
-function getBookingById(id: number) {
-  return prisma.booking.findFirst({
-    where: {
-      id,
-    },
-    include: {
-      Room: true,
-    },
-  });
-}
-
-function getRoomsByHotelId(hotelId: number) {
-  return prisma.hotel.findFirst({
-    where: {
-      id: hotelId,
-    },
-    include: {
-      Rooms: true,
-    },
-  });
-}
-
 function getAllRoomBookings(id: number) {
   return prisma.room.findFirst({
     where: {
@@ -70,8 +48,6 @@ function updateBookingData(id: number, roomId: number) {
 
 const bookingsRepository = {
   getBookingByUserId,
-  getBookingById,
-  getRoomsByHotelId,
   getAllRoomBookings,
   postNewBooking,
   updateBookingData,

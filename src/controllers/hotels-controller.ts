@@ -35,6 +35,8 @@ export async function listAllRoomsFromHotel(req: AuthenticatedRequest, res: Resp
       return res.sendStatus(httpStatus.FORBIDDEN);
     } else if (error.name === "InvalidDataError") {
       return res.sendStatus(httpStatus.PAYMENT_REQUIRED);
+    } else if (error.name === "UnauthorizedError") {
+      return res.sendStatus(httpStatus.UNAUTHORIZED);
     }
   }
 }

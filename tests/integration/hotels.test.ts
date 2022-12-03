@@ -49,7 +49,8 @@ describe("GET /hotels", () => {
 
   describe("when token is valid", () => {
     it("should respond with status 401 if there is no enrollment", async () => {
-      const token = generateValidToken();
+      const user = await createUser();
+      const token = await generateValidToken(user);
       const response = await server.get("/hotels").set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(httpStatus.UNAUTHORIZED);
@@ -147,7 +148,8 @@ describe("GET /hotels/:hotelId", () => {
 
   describe("when token is valid", () => {
     it("should respond with status 401 if there is no enrollment", async () => {
-      const token = generateValidToken();
+      const user = await createUser();
+      const token = await generateValidToken(user);
       const response = await server.get("/hotels/1").set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(httpStatus.UNAUTHORIZED);
